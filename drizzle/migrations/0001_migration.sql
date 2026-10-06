@@ -1,0 +1,1 @@
+CREATE POLICY "covers read authenticated" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'game-covers');
