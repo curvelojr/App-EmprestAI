@@ -1,0 +1,38 @@
+Instruções para edição do APK EmprestAI
+
+Mudanças no banco (tabelas, regras de segurança, e-mails de confirmação, usuários) são feitas no Lovable Cloud e valem na hora, para todos os celulares.
+Mudanças em telas, textos, botões e lógica ficam dentro do APK, então precisam do ciclo acima.
+
+O GitHub serve como backup e histórico: https://github.com/curvelojr/App-EmprestAI
+Após mudanças no VS code execute o commit:
+git add .
+git commit -m "descrição da mudança"
+git push
+
+--------------------------------------------------------------------------------------------------------
+Edite no VSCode
+
+Para testar: npm run dev
+
+Gere a versão mobile e sincronize:
+
+npm run build:mobile
+npx cap sync
+
+Gere o APK.
+Pode ser pelo Android Studio (Build → Generate App Bundles or APKs → Generate APKs)
+ou, sem abrir o programa, pelo terminal:
+
+cd android
+.\gradlew assembleDebug
+
+O AndroidStudio Gera o APK na pasta:
+android\app\build\outputs\apk\debug\app-debug.apk
+----------------------------------------------------------------------------------------------------------
+
+Compile o APK no Android Studio.
+Build → Generate App Bundles or APKs → Generate APKs
+
+Projeto feito no Lovabble:
+https://lovable.dev/projects/7df2e6e2-68e0-468f-b72f-bcdb807366fc?view=more&subview=cloud&section=users
+
