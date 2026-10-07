@@ -1,27 +1,19 @@
-# Welcome to your Lovable project
+# Bem vindo ao Projeto EmprestAI
 
-This project was built with [Lovable](https://lovable.dev).
+Este projeto foi criado com o [Lovable](https://lovable.dev).
 
-## Build with Lovable
+## Desenvolvimento
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Prefere trabalhar localmente? Você precisará do Node.js e do npm — [instale usando o nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
+git clone <url-deste-repositorio>
+cd <nome-do-repositorio>
 npm i
 npm run dev
 ```
 
-## Built with
+## Criado com
 
 - TanStack Start
 - TypeScript
