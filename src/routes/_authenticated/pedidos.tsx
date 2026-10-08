@@ -23,7 +23,7 @@ const statusLabel: Record<string, string> = { pendente: "Pendente", aceito: "Ace
 function Pedidos() {
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
-  const { data } = useLoans(user.id);
+  const { data, error, isLoading } = useLoans(user.id);
   type Loan = NonNullable<typeof data>[number];
   const [reviewing, setReviewing] = useState<Loan | null>(null);
   const [dueFor, setDueFor] = useState<{ loan: Loan; mode: "accept" | "edit" } | null>(null);
@@ -111,6 +111,12 @@ function Pedidos() {
   return (
     <div>
       <h1 className="text-4xl">Pedidos</h1>
+      {isLoading && <p className="mt-3 text-sm text-muted-foreground">Carregando…</p>}
+      {error && (
+        <p className="mt-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          Não foi possível carregar os pedidos: {error.message}
+        </p>
+      )}
       <Tabs defaultValue="recebidos" className="mt-3">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="recebidos">Recebidos ({received.length})</TabsTrigger>

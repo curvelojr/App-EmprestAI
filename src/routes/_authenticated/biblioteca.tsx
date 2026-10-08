@@ -6,10 +6,11 @@ import { Camera, Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CONDITIONS, PLATFORMS, useCoverUrls } from "@/lib/games";
 import { GameCover } from "@/components/GameCover";
+import { useLoans } from "@/lib/loans";
+import { dueInfo, formatDate } from "@/lib/deadlines";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -33,12 +34,13 @@ function Biblioteca() {
     },
   });
   const urls = useCoverUrls(data.map((g) => g.cover_url));
+  const { data: loans = [] } = useLoans(user.id);
 
-  async function toggle(id: string, available: boolean) {
-    await supabase.from("games").update({ available }).eq("id", id);
-    qc.invalidateQueries({ queryKey: ["my-games"] });
-  }
   async function remove(id: string, path: string | null) {
+    if (loans.some((l) => l.game_id === id && l.status === "aceito")) {
+      toast.error("Este jogo está emprestado. Marque como devolvido antes de remover.");
+      return;
+    }
     if (!confirm("Remover este jogo?")) return;
     await supabase.from("games").delete().eq("id", id);
     if (path) await supabase.storage.from("game-covers").remove([path]);
@@ -58,20 +60,44 @@ function Biblioteca() {
         </div>
       ) : (
         <ul className="mt-4 space-y-3">
-          {data.map((g) => (
+          {data.map((g) => {
+            const lent = loans.find((l) => l.game_id === g.id && l.status === "aceito");
+            const pending = loans.filter((l) => l.game_id === g.id && l.status === "pendente").length;
+            const info = lent?.due_date ? dueInfo(lent.due_date) : null;
+            return (
             <li key={g.id} className="flex gap-3 rounded-xl border bg-card p-3">
               <div className="w-16 shrink-0"><GameCover src={g.cover_url ? urls[g.cover_url] : undefined} title={g.title} /></div>
               <div className="flex min-w-0 flex-1 flex-col">
                 <p className="line-clamp-1 font-semibold">{g.title}</p>
                 <div className="mt-1 flex gap-2"><Badge variant="secondary">{g.platform}</Badge><span className="text-xs text-muted-foreground">{g.condition}</span></div>
-                <label className="mt-auto flex items-center gap-2 text-xs text-muted-foreground">
-                  <Switch checked={g.available} onCheckedChange={(v) => toggle(g.id, v)} />
-                  {g.available ? "Disponível" : "Emprestado"}
-                </label>
+                <div className="mt-auto pt-2 text-xs">
+                  {lent ? (
+                    <>
+                      <p className="flex items-center gap-1.5 font-medium text-orange-400">
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-orange-400" />
+                        <span className="line-clamp-1">Emprestado para {lent.other?.full_name ?? "outro usuário"}</span>
+                      </p>
+                      <p className={`mt-0.5 ${info?.overdue ? "font-semibold text-destructive" : "text-muted-foreground"}`}>
+                        {lent.due_date && info ? `Devolver até ${formatDate(lent.due_date)} · ${info.text}` : "Sem prazo definido"}
+                      </p>
+                    </>
+                  ) : g.available ? (
+                    <p className="flex items-center gap-1.5 text-muted-foreground">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                      Disponível{pending > 0 && <span className="font-semibold text-primary"> · {pending} {pending === 1 ? "pedido novo" : "pedidos novos"}</span>}
+                    </p>
+                  ) : (
+                    <p className="flex items-center gap-1.5 text-muted-foreground">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-muted-foreground" />
+                      Indisponível
+                    </p>
+                  )}
+                </div>
               </div>
               <button onClick={() => remove(g.id, g.cover_url)} aria-label="Remover" className="self-start text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
       <AddGame open={open} onOpenChange={setOpen} userId={user.id} onSaved={() => qc.invalidateQueries({ queryKey: ["my-games"] })} />
