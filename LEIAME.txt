@@ -14,7 +14,7 @@ Edite no VSCode
 
 Para testar: npm run dev
 
-Gere a versão mobile e sincronize:
+Gere a versão mobile e sincronize (CTRL+C para para o teste antes de gerar):
 
 npm run build:mobile
 npx cap sync
