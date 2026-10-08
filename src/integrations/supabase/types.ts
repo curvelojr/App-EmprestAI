@@ -64,6 +64,7 @@ export type Database = {
       loan_requests: {
         Row: {
           created_at: string
+          due_date: string | null
           game_id: string
           id: string
           message: string
@@ -73,6 +74,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          due_date?: string | null
           game_id: string
           id?: string
           message?: string
@@ -82,6 +84,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          due_date?: string | null
           game_id?: string
           id?: string
           message?: string
