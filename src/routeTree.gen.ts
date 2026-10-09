@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
 import { Route as AuthenticatedExplorarRouteImport } from './routes/_authenticated/explorar'
 import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
@@ -29,6 +30,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedBibliotecaRoute = AuthenticatedBibliotecaRouteImport.update({
@@ -55,6 +61,7 @@ const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/explorar': typeof AuthenticatedExplorarRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/explorar': typeof AuthenticatedExplorarRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
@@ -73,6 +81,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/_authenticated/explorar': typeof AuthenticatedExplorarRoute
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
@@ -81,14 +90,28 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/biblioteca' | '/explorar' | '/pedidos' | '/perfil'
+    | '/'
+    | '/auth'
+    | '/redefinir-senha'
+    | '/biblioteca'
+    | '/explorar'
+    | '/pedidos'
+    | '/perfil'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/biblioteca' | '/explorar' | '/pedidos' | '/perfil'
+  to:
+    | '/'
+    | '/auth'
+    | '/redefinir-senha'
+    | '/biblioteca'
+    | '/explorar'
+    | '/pedidos'
+    | '/perfil'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/redefinir-senha'
     | '/_authenticated/biblioteca'
     | '/_authenticated/explorar'
     | '/_authenticated/pedidos'
@@ -99,6 +122,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -122,6 +146,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/biblioteca': {
@@ -176,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

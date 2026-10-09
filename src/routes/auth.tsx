@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authRedirectUrl } from "@/lib/authRedirect";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s) => z.object({ modo: z.enum(["entrar", "cadastro"]).optional() }).parse(s),
@@ -44,6 +45,8 @@ function AuthPage() {
   const [f, setF] = useState<F>(empty);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [forgot, setForgot] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
   const set = (k: keyof F) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
@@ -73,7 +76,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/explorar", data: { ...meta, state: meta.state.toUpperCase() } },
+          options: { emailRedirectTo: authRedirectUrl("/explorar"), data: { ...meta, state: meta.state.toUpperCase() } },
         });
         if (error) throw error;
         setSent(true);
@@ -85,6 +88,56 @@ function AuthPage() {
     }
   }
 
+  const field = (k: keyof F, label: string, props: React.ComponentProps<typeof Input> = {}) => (
+    <div className="space-y-1.5">
+      <Label htmlFor={k}>{label}</Label>
+      <Input id={k} value={f[k] ?? ""} onChange={set(k)} {...props} />
+    </div>
+  );
+
+  async function sendReset(e: React.FormEvent) {
+    e.preventDefault();
+    const email = f.email.trim();
+    if (!z.string().email().safeParse(email).success) { toast.error("Informe um e-mail válido"); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl("/redefinir-senha") });
+    setLoading(false);
+    if (error) {
+      toast.error(error.status === 429 ? "Muitas tentativas. Aguarde um minuto e tente de novo." : "Não foi possível enviar o e-mail. Tente novamente.");
+      return;
+    }
+    setResetSent(true);
+  }
+
+  if (forgot)
+    return (
+      <main className="bg-grid min-h-screen">
+        <div className="mx-auto max-w-md px-6 py-8">
+          <Link to="/" className="flex items-center gap-2 text-primary">
+            <Gamepad2 className="h-6 w-6" />
+            <span className="font-display text-xl tracking-wider">GameShare</span>
+          </Link>
+          <h1 className="mt-8 text-4xl">Recuperar senha</h1>
+          {resetSent ? (
+            <div className="mt-4 space-y-4">
+              <p className="text-muted-foreground">Se existir uma conta com o e-mail {f.email.trim()}, enviamos um link para criar uma nova senha. Confira também a caixa de spam.</p>
+              <Button className="w-full font-semibold" onClick={() => { setForgot(false); setResetSent(false); }}>Voltar ao login</Button>
+            </div>
+          ) : (
+            <form onSubmit={sendReset} className="mt-4 space-y-4">
+              <p className="text-muted-foreground">Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha.</p>
+              {field("email", "E-mail", { type: "email", autoComplete: "email" })}
+              <Button type="submit" size="lg" className="w-full font-semibold shadow-glow" disabled={loading}>
+                {loading && <Loader2 className="animate-spin" />}
+                Enviar link
+              </Button>
+              <button type="button" onClick={() => setForgot(false)} className="w-full text-center text-sm text-muted-foreground">Voltar ao login</button>
+            </form>
+          )}
+        </div>
+      </main>
+    );
+
   if (sent)
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 text-center">
@@ -93,13 +146,6 @@ function AuthPage() {
         <Button className="mt-8" onClick={() => { setSent(false); setMode("entrar"); }}>Ir para o login</Button>
       </main>
     );
-
-  const field = (k: keyof F, label: string, props: React.ComponentProps<typeof Input> = {}) => (
-    <div className="space-y-1.5">
-      <Label htmlFor={k}>{label}</Label>
-      <Input id={k} value={f[k] ?? ""} onChange={set(k)} {...props} />
-    </div>
-  );
 
   return (
     <main className="bg-grid min-h-screen">
@@ -120,6 +166,9 @@ function AuthPage() {
           {mode === "cadastro" && field("full_name", "Nome completo", { autoComplete: "name" })}
           {field("email", "E-mail", { type: "email", autoComplete: "email" })}
           {field("password", "Senha", { type: "password", autoComplete: mode === "entrar" ? "current-password" : "new-password" })}
+          {mode === "entrar" && (
+            <button type="button" onClick={() => setForgot(true)} className="-mt-1 block text-sm text-primary">Esqueci minha senha</button>
+          )}
           {mode === "cadastro" && (
             <>
               {field("whatsapp", "WhatsApp (com DDD)", { type: "tel", placeholder: "(85) 99999-9999" })}
